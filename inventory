@@ -4,3 +4,8 @@
 [workstations]
 10.100.1.221
 
+[db_servers]
+10.100.1.221
+
+[file_servers]
+10.100.1.221

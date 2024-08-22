@@ -1,0 +1,67 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: install updates
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and php
+    tags: apache2,apache,php
+    package:
+      name:
+        - "{{ apache_package }}"
+        - "{{ php_package }}"
+      state: latest
+      update_cache: yes
+
+  - name: start apache
+    tags: apache
+    service:
+      name: apache2
+      state: started
+      enabled: yes
+    when: ansible_distribution == "Ubuntu"
+
+  - name: copy default html file for site
+    tags: apache,apache2,php
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICgzSJBn7VZpjudQzI7KWO+tQRxQfIhBSmD8BUCpQaZE ansible"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+
+  - name: install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
+
